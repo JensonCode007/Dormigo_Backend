@@ -13,7 +13,7 @@ import java. math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdateProductRequest {
+public class ProductRequest {
 
     // All fields optional for partial updates (PATCH)
 

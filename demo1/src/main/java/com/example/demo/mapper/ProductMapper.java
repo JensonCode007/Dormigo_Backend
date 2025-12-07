@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductMapper {
 
-    public ProductResponse toResponse(Product product) {
+    public static ProductResponse toResponse(Product product) {
         if (product == null) {
             return null;
         } else {
@@ -27,7 +27,7 @@ public class ProductMapper {
                     .build();
         }
     }
-    private ProductResponse.SellerInfo mapSellerInfo(Product product){
+    private static ProductResponse.SellerInfo mapSellerInfo(Product product){
         var seller = product.getSeller();
         return ProductResponse.SellerInfo.builder()
                 .id(seller.getId())

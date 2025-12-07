@@ -1,0 +1,152 @@
+package com.example.demo.service;
+
+import com.example.demo.Entity.Category;
+import com.example.demo.Entity.Product;
+import com.example.demo.Entity.User;
+import com.example.demo.Repository.CategoryRepository;
+import com.example.demo.Repository.ProductRepository;
+import com.example.demo.Repository.UserRepository;
+import com.example.demo.controller.ProductController;
+import com.example.demo.dto.request.ProductRequest;
+import com.example.demo.dto.response.ProductResponse;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.mapper.ProductMapper;
+import com.example.demo.security.UserPrincipal;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ProductService {
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Transactional
+    public ProductResponse addProduct(ProductRequest productRequest, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userPrincipal.getId()));
+
+        Category category = categoryRepository.findById(productRequest.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", productRequest.getCategoryId()));
+
+
+        Product product = new Product();
+        product.setTitle(productRequest.getTitle());
+        product.setPrice(productRequest.getPrice());
+        product.setDescription(productRequest.getDescription());
+        product.setQuantity(productRequest.getQuantity());
+        product.setProductCondition(productRequest.getCondition());
+        product.setCategory(category);
+        product.setSeller(user);
+        product.setIsAvailable(true);
+
+        Product savedProduct = productRepository.save(product);
+
+        return ProductMapper.toResponse(savedProduct);
+    }
+
+    public Page<ProductResponse> getAllAvailableProducts(int page, int size, String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return productRepository.findByIsAvailableTrue(pageable)
+                .map(ProductMapper::toResponse);
+    }
+
+    public ProductResponse getProductById(Long id){
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        return ProductMapper.toResponse(product);
+    }
+
+    public Page<ProductResponse> getProductsByCategory(int page, int size, Long id) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository.findByCategoryIdAndIsAvailableTrue(id, pageable)
+                .map(ProductMapper::toResponse);
+    }
+
+    public Page<ProductResponse> searchProducts(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository.searchProducts(query, pageable)
+                .map(ProductMapper::toResponse);
+    }
+
+    public List<ProductResponse> getMyProducts(UserPrincipal userPrincipal) {
+        Collection<Product> product = productRepository.findBySellerId(userPrincipal.getId());
+        return product.stream().map(ProductMapper::toResponse).collect(Collectors.toList());
+
+
+    }
+
+    @Transactional
+    public ProductResponse updateProduct(Long id, ProductRequest productRequest, UserPrincipal userPrincipal) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if(!product.getSeller().getId().equals(userPrincipal.getId())){
+            throw new UnauthorizedException("You are not allowed to update this product");
+        }
+
+        Category category = categoryRepository.findById(productRequest.getCategoryId()).orElseThrow(
+                () -> new ResourceNotFoundException("Category", "id", productRequest.getCategoryId())
+        );
+        if (productRequest. getTitle() != null) {
+            product.setTitle(productRequest.getTitle());
+        }
+        if (productRequest.getPrice() != null) {
+            product.setPrice(productRequest.getPrice());
+        }
+        if (productRequest.getDescription() != null) {
+            product.setDescription(productRequest.getDescription());
+        }
+        if (productRequest.getQuantity() != null) {
+            product.setQuantity(productRequest.getQuantity());
+        }
+        if (productRequest.getCondition() != null) {
+            product.setProductCondition(productRequest.getCondition());
+        }
+        if (productRequest.getCategoryId() != null) {
+            product.setCategory(category);
+        }
+        if (productRequest.getIsAvailable() != null) {
+            product.setIsAvailable(productRequest.getIsAvailable());
+        }
+
+        Product updatedProduct = productRepository.save(product);
+        return ProductMapper.toResponse(updatedProduct);
+
+    }
+
+    @Transactional
+    public void deleteProduct(Long id, UserPrincipal userPrincipal) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if(!product.getSeller().getId().equals(userPrincipal.getId())){
+            throw new UnauthorizedException("You are not allowed to delete this product");
+        }
+
+        productRepository.delete(product);
+
+    }
+
+}

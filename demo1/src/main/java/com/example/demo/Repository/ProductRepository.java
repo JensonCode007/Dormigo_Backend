@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -48,6 +49,5 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
     Page<Product> searchProducts(@Param("keyword") String keyword, Pageable pageable);
 
 
-
-
+    Collection<Product> findBySellerId(Long id);
 }
