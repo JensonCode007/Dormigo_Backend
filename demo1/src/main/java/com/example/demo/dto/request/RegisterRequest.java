@@ -20,7 +20,7 @@ public class RegisterRequest {
     @Email(message = "Email should be valid")
     private String email;
 
-    @NotBlank(,message = "Password is Required")
+    @NotBlank(message = "Password is Required")
     @Size(min = 8, message = "Password must atleast contain 8 characters")
     @Pattern(
             regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$",

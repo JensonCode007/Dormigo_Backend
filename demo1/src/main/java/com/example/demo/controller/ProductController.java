@@ -13,13 +13,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("api/products")
 public class ProductController {
 
     @Autowired
@@ -28,7 +29,7 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    @GetMapping("/allAvailable")
+    @GetMapping("/public/available")
     public ResponseEntity<Page<ProductResponse>> getAllAvailableProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -38,6 +39,7 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping
     public ResponseEntity<ProductResponse> addProduct(@Valid @RequestBody ProductRequest productRequest,
                                                       @AuthenticationPrincipal UserPrincipal userPrincipal){
@@ -50,28 +52,30 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    @GetMapping("/byCategory/{id}")
+    @GetMapping("public/{categoryId}")
     public ResponseEntity<Page<ProductResponse>> getProductByCategory(
-            @PathVariable Long id,
+            @PathVariable Long categoryId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size){
-        return ResponseEntity.ok(productService.getProductsByCategory(page, size, id));
+        return ResponseEntity.ok(productService.getProductsByCategory(page, size, categoryId));
 
     }
 
-    @GetMapping("/search")
+    @GetMapping("public/search")
     public ResponseEntity<Page<ProductResponse>> getProductBySearch(@RequestParam String query,
                                                                     @RequestParam int page,
                                                                     @RequestParam int size){
         return ResponseEntity.ok(productService.searchProducts(query, page, size));
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/my-products")
     public ResponseEntity<List<ProductResponse>> getMyProducts(@AuthenticationPrincipal UserPrincipal userPrincipal){
         return ResponseEntity.ok(productService.getMyProducts(userPrincipal));
     }
 
-    @PutMapping("{id")
+    @PreAuthorize("hasRole('STUDENT')")
+    @PutMapping("{id}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id,
                                                          @RequestBody ProductRequest productRequest,
                                                          @AuthenticationPrincipal UserPrincipal userPrincipal){
@@ -79,6 +83,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.updateProduct(id, productRequest, userPrincipal));
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("{id}")
     public ResponseEntity<ProductResponse> deleteProduct(@PathVariable Long id,
                                                          @AuthenticationPrincipal UserPrincipal userPrincipal){

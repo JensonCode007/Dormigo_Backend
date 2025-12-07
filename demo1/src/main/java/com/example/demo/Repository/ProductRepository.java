@@ -23,7 +23,7 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
 
     List<Product> findBySeller(User seller);
 
-    Page<Product> findByConditionAndIsAvailableTrue(Pageable pageable, ProductCondition condition);
+    Page<Product> findByProductConditionAndIsAvailableTrue(Pageable pageable, ProductCondition condition);
 
     Page<Product> findByPriceBetweenAndIsAvailableTrue(
             BigDecimal minPrice,

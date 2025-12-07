@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CategoryMapper {
 
-    public CategoryResponse toResponse(Category category) {
+    public static CategoryResponse toResponse(Category category) {
         if (category == null) {
             return null;
         }
