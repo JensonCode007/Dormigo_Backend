@@ -1,71 +1,73 @@
 package com.example.demo.security;
 
 import com.example.demo.Entity.User;
+import com.example.demo.Enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core. GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class UserPrincipal {
+public class UserPrincipal implements UserDetails {
 
+    private Long id;
     private String email;
     private String password;
-    private Long id;
+    private Boolean isActive;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public static UserPrincipal create(User user){
-        GrantedAuthority authority = new SimpleGrantedAuthority("Role" + user.getRole().name());
-
+    // Create UserPrincipal from User entity
+    public static UserPrincipal create(User user) {
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_" + user.getRole(). name());
 
         return new UserPrincipal(
                 user.getId(),
                 user.getEmail(),
                 user.getPassword(),
-                Collections.singletonList(authority)
-
+                user.getIsActive(),
+                Collections.singletonList(grantedAuthority)
         );
     }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
 
     @Override
-    public String getPassword(){
+    public String getPassword() {
         return password;
     }
 
     @Override
-    public String getUserName(){
-        return email;
+    public String getUsername() {
+        return email; // Using email as username
     }
 
     @Override
-    public boolean isAccountNonExpired(){
+    public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
-    public boolean isAccountNonLocked(){
+    public boolean isAccountNonLocked() {
         return true;
     }
 
     @Override
-    public boolean isCredentialsNonExpired(){
+    public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
-    public boolean isEnabled(){
-        return user.getIsActive();
+    public boolean isEnabled() {
+        return isActive != null && isActive;
     }
-
-
 }
