@@ -23,8 +23,7 @@ public class ProductRequest {
     @Size(min = 10, max = 5000, message = "Description must be between 10 and 5000 characters")
     private String description;
 
-    @DecimalMin(value = "0. 01", message = "Price must be greater than 0")
-    @DecimalMax(value = "999999.99", message = "Price cannot exceed 999,999.99")
+    @NotNull(message = "price is required")
     private BigDecimal price;
 
     @Min(value = 0, message = "Quantity cannot be negative")

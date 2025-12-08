@@ -22,10 +22,10 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false, length = 10)
+    @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "description", nullable = false, length = 200)
+    @Column(name = "description", nullable = false, length = 5000)
     private String description;
 
     @Column(name = "price", precision = 10, scale = 2, nullable = false)
@@ -35,6 +35,7 @@ public class Product {
     private Integer quantity;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "product_condition", nullable = false)
     private ProductCondition productCondition;
 
     @ManyToOne(fetch = FetchType.LAZY)

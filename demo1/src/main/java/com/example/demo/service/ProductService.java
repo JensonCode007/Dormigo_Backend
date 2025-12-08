@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -33,9 +34,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private ProductRepository productRepository;
-    private CategoryRepository categoryRepository;
-    private UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public ProductResponse addProduct(ProductRequest productRequest, UserPrincipal userPrincipal) {
@@ -45,7 +46,18 @@ public class ProductService {
         Category category = categoryRepository.findById(productRequest.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "id", productRequest.getCategoryId()));
 
-
+        if (productRequest. getPrice() == null) {
+            throw new IllegalArgumentException("Price is required");
+        }
+        if (productRequest.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Price must be greater than 0");
+        }
+        if (productRequest.getPrice().compareTo(new BigDecimal("999999.99")) > 0) {
+            throw new IllegalArgumentException("Price cannot exceed 999,999.99");
+        }
+        if (productRequest.getCondition() == null) {
+            throw new IllegalArgumentException("Product condition is required");
+        }
         Product product = new Product();
         product.setTitle(productRequest.getTitle());
         product.setPrice(productRequest.getPrice());
@@ -61,7 +73,7 @@ public class ProductService {
         return ProductMapper.toResponse(savedProduct);
     }
 
-    public @Nullable Page<ProductResponse> getAllAvailableProducts(int page, int size, String sortBy) {
+    public Page<ProductResponse> getAllAvailableProducts(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return productRepository.findByIsAvailableTrue(pageable)
                 .map(ProductMapper::toResponse);

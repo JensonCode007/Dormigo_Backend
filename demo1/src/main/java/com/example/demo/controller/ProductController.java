@@ -8,10 +8,12 @@ import com.example.demo.dto.response.ProductResponse;
 import com.example.demo.security.UserPrincipal;
 import com.example.demo.service.ProductService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,14 +22,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/products/")
+@RequiredArgsConstructor
 public class ProductController {
 
-    @Autowired
-    private ProductRepository productRepository;
 
-    @Autowired
-    private ProductService productService;
+    private final ProductRepository productRepository;
+    private final ProductService productService;
 
     @GetMapping("/public/all")
     public ResponseEntity<Page<ProductResponse>> getAllAvailableProducts(
@@ -85,10 +86,10 @@ public class ProductController {
 
     @PreAuthorize("hasRole('STUDENT')")
     @DeleteMapping("{id}")
-    public ResponseEntity<ProductResponse> deleteProduct(@PathVariable Long id,
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id,
                                                          @AuthenticationPrincipal UserPrincipal userPrincipal){
         productService.deleteProduct(id, userPrincipal);
-        return ResponseEntity.ok(productService.getProductById(id));
+        return new ResponseEntity<>("Product deleted", HttpStatus.OK);
     }
 
 
