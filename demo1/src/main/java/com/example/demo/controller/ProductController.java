@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/products")
+@RequestMapping("/api/products")
 public class ProductController {
 
     @Autowired
@@ -29,7 +29,7 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    @GetMapping("/public/available")
+    @GetMapping("/public/all")
     public ResponseEntity<Page<ProductResponse>> getAllAvailableProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -47,12 +47,12 @@ public class ProductController {
 
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/public/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id){
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    @GetMapping("public/{categoryId}")
+    @GetMapping("/public/category/{categoryId}")
     public ResponseEntity<Page<ProductResponse>> getProductByCategory(
             @PathVariable Long categoryId,
             @RequestParam(defaultValue = "0") int page,
@@ -61,7 +61,7 @@ public class ProductController {
 
     }
 
-    @GetMapping("public/search")
+    @GetMapping("/public/search")
     public ResponseEntity<Page<ProductResponse>> getProductBySearch(@RequestParam String query,
                                                                     @RequestParam int page,
                                                                     @RequestParam int size){
@@ -75,7 +75,7 @@ public class ProductController {
     }
 
     @PreAuthorize("hasRole('STUDENT')")
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id,
                                                          @RequestBody ProductRequest productRequest,
                                                          @AuthenticationPrincipal UserPrincipal userPrincipal){

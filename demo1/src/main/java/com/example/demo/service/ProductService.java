@@ -13,6 +13,7 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.mapper.ProductMapper;
 import com.example.demo.security.UserPrincipal;
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,13 +33,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductService {
 
-    @Autowired
     private ProductRepository productRepository;
-
-    @Autowired
     private CategoryRepository categoryRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Transactional
@@ -65,7 +61,7 @@ public class ProductService {
         return ProductMapper.toResponse(savedProduct);
     }
 
-    public Page<ProductResponse> getAllAvailableProducts(int page, int size, String sortBy) {
+    public @Nullable Page<ProductResponse> getAllAvailableProducts(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return productRepository.findByIsAvailableTrue(pageable)
                 .map(ProductMapper::toResponse);

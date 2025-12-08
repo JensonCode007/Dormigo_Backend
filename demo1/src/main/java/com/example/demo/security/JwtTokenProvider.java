@@ -20,7 +20,7 @@ public class JwtTokenProvider {
     private String jwtSecret;
 
     @Value("${jwt.expiration}")
-    private String jwtExpiration;
+    private long jwtExpiration;
 
     /*
     * JWT Token for authenticated users
