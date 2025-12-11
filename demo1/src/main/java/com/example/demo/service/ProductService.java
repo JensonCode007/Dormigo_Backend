@@ -3,11 +3,13 @@ package com.example.demo.service;
 import com.example.demo.Entity.Category;
 import com.example.demo.Entity.Product;
 import com.example.demo.Entity.User;
+import com.example.demo.Enums.ProductCondition;
 import com.example.demo.Repository.CategoryRepository;
 import com.example.demo.Repository.ProductRepository;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.controller.ProductController;
 import com.example.demo.dto.request.ProductRequest;
+import com.example.demo.dto.request.ProductSearchRequest;
 import com.example.demo.dto.response.ProductResponse;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
@@ -73,8 +75,11 @@ public class ProductService {
         return ProductMapper.toResponse(savedProduct);
     }
 
-    public Page<ProductResponse> getAllAvailableProducts(int page, int size, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+    public Page<ProductResponse> getAllAvailableProducts(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
         return productRepository.findByIsAvailableTrue(pageable)
                 .map(ProductMapper::toResponse);
     }
@@ -86,14 +91,18 @@ public class ProductService {
         return ProductMapper.toResponse(product);
     }
 
-    public Page<ProductResponse> getProductsByCategory(int page, int size, Long id) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<ProductResponse> getProductsByCategory(int page, int size, Long id, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
         return productRepository.findByCategoryIdAndIsAvailableTrue(id, pageable)
                 .map(ProductMapper::toResponse);
     }
 
-    public Page<ProductResponse> searchProducts(String query, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<ProductResponse> searchProducts(String query, int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
         return productRepository.searchProducts(query, pageable)
                 .map(ProductMapper::toResponse);
     }
@@ -156,5 +165,62 @@ public class ProductService {
         productRepository.delete(product);
 
     }
+
+
+    public Page<ProductResponse> advanceSearchFilter(ProductSearchRequest productSearchRequest) {
+
+        int page = productSearchRequest.getPage() != null ? productSearchRequest.getPage() : 0;
+        int size = productSearchRequest.getSize() != null ? productSearchRequest.getSize() : 20;
+        String sortBy = productSearchRequest.getSortBy() != null ? productSearchRequest.getSortBy() : "createdAt";
+        String sortDir = productSearchRequest.getSortDir() != null ? productSearchRequest.getSortDir() : "ASC";
+
+        Sort sort = sortBy.equalsIgnoreCase("DESC")?
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return productRepository.searchProductsWithFilters(
+                productSearchRequest.getKeyword(),
+                productSearchRequest.getCategoryId(),
+                productSearchRequest.getCondition(),
+                productSearchRequest.getMinPrice(),
+                productSearchRequest.getMaxPrice(),
+                pageable
+        ).map(ProductMapper::toResponse);
+    }
+
+    public Page<ProductResponse> getProductsByPriceRange(
+            BigDecimal minPrice, BigDecimal maxPrice,
+            int page, int size, String sortBy, String sortDir) {
+
+        if(page < 0) page = 0;
+        if(size < 0) size = 10;
+
+        Sort sort = sortBy.equalsIgnoreCase("DESC")?
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return productRepository.findByPriceBetweenAndIsAvailableTrue(
+                minPrice,
+                maxPrice,
+                pageable
+        ).map(ProductMapper::toResponse);
+    }
+
+    public Page<ProductResponse> getProductsByCondition(
+            ProductCondition productCondition,
+            int page, int size, String sortBy, String sortDir) {
+        if(page < 0) page = 0;
+        if(size < 0) size = 10;
+        Sort sort = sortBy.equalsIgnoreCase("DESC")?
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return productRepository.findByProductConditionAndIsAvailableTrue(pageable, productCondition)
+                                                                        .map(ProductMapper::toResponse);
+
+
+    }
+
 
 }

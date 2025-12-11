@@ -2,8 +2,10 @@ package com.example.demo.controller;
 
 
 import com.example.demo.Entity.Product;
+import com.example.demo.Enums.ProductCondition;
 import com.example.demo.Repository.ProductRepository;
 import com.example.demo.dto.request.ProductRequest;
+import com.example.demo.dto.request.ProductSearchRequest;
 import com.example.demo.dto.response.ProductResponse;
 import com.example.demo.security.UserPrincipal;
 import com.example.demo.service.ProductService;
@@ -19,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -34,9 +37,12 @@ public class ProductController {
     public ResponseEntity<Page<ProductResponse>> getAllAvailableProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "title") String sortBy
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDir
     ){
-        Page<ProductResponse> product = productService.getAllAvailableProducts(page, size, sortBy);
+        if(page < 0) page = 0;
+        if(size >100) size = 100;
+        Page<ProductResponse> product = productService.getAllAvailableProducts(page, size, sortBy, sortDir);
         return ResponseEntity.ok(product);
     }
 
@@ -57,16 +63,26 @@ public class ProductController {
     public ResponseEntity<Page<ProductResponse>> getProductByCategory(
             @PathVariable Long categoryId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size){
-        return ResponseEntity.ok(productService.getProductsByCategory(page, size, categoryId));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "name")  String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDir){
+        if(page < 0) page = 0;
+        if(size > 100) size = 100;
+        return ResponseEntity.ok(productService.getProductsByCategory(page, size, categoryId, sortBy, sortDir));
 
     }
 
     @GetMapping("/public/search")
-    public ResponseEntity<Page<ProductResponse>> getProductBySearch(@RequestParam String query,
-                                                                    @RequestParam int page,
-                                                                    @RequestParam int size){
-        return ResponseEntity.ok(productService.searchProducts(query, page, size));
+    public ResponseEntity<Page<ProductResponse>> getProductBySearch(
+            @RequestParam  String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam String sortDir){
+
+        if(page < 0) page = 0;
+        if(size > 100) size = 100;
+        return ResponseEntity.ok(productService.searchProducts(query, page, size, sortBy, sortDir));
     }
 
     @PreAuthorize("hasRole('STUDENT')")
@@ -92,7 +108,74 @@ public class ProductController {
         return new ResponseEntity<>("Product deleted", HttpStatus.OK);
     }
 
+    @GetMapping("/public/advance-search")
+    public ResponseEntity<Page<ProductResponse>> advancedSearch(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) ProductCondition condition,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir
+
+    ){
+        if(page < 0) page = 0;
+        if(size > 100) size = 100;
+
+        ProductSearchRequest product = ProductSearchRequest.builder()
+                .keyword(keyword)
+                .categoryId(categoryId)
+                .condition(condition)
+                .minPrice(minPrice)
+                .maxPrice(maxPrice)
+                .page(page)
+                .size(size)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+
+        Page<ProductResponse> getProduct = productService.advanceSearchFilter(product);
+        return ResponseEntity.ok(getProduct);
+    }
+
+    @GetMapping("/public/price-range")
+    public ResponseEntity<Page<ProductResponse>> getProductsByPriceRange(
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir
+
+    ){
+        if(page < 0) page = 0;
+        if(size > 100) size = 100;
+
+        Page<ProductResponse> product = productService.getProductsByPriceRange(
+                minPrice, maxPrice, page, size, sortBy, sortDir
+        );
+        return ResponseEntity.ok(product);
 
 
+    }
+
+    @GetMapping("/public/condition/{condition}")
+    public ResponseEntity<Page<ProductResponse>> getProductsByProductCondition(
+            @RequestParam(required = false) ProductCondition condition,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir
+    ){
+        if(page < 0) page = 0;
+        if(size > 100) size = 100;
+
+        Page<ProductResponse> product = productService.getProductsByCondition(
+                condition, page, size, sortBy, sortDir);
+
+        return ResponseEntity.ok(product);
+    }
 
 }

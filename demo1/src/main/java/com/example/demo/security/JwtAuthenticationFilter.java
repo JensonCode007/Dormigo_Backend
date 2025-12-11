@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +22,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
@@ -42,6 +44,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                String requestPath = request.getRequestURI();
+                if (isPublicEndpoint(requestPath)) {
+                    log.debug("Public endpoint accessed: {}", requestPath);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
             }
         }
         catch (Exception e){
@@ -50,6 +59,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
 
+    }
+
+    private boolean isPublicEndpoint(String path) {
+        return path.startsWith("/api/auth/") ||
+                path.startsWith("/api/files/") ||           // ✅ CRITICAL: Allow file access
+                path.startsWith("/api/products/public/") ||
+                path.startsWith("/api/categories/public/") ||
+                path.equals("/actuator/health") ||
+                path.equals("/error");
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

@@ -1,0 +1,14 @@
+Product
+
+1. http://localhost:8080/api/products/public/**  - Accessible To The Public
+2. http://localhost:8080/api/products/           - Accessible only to the Authenticated User
+
+Category
+
+1. http://localhost:8080/api/category/public/**  - Accessible To the Public
+2. http://localhost:8080/api/category/           - Accessible Only To the ADMIN
+
+Signup and Login
+
+1. http://localhost:8080/api/auth/login
+2. http://localhost:8080/api/auth/signup

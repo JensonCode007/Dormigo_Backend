@@ -8,6 +8,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "Product")
 @Entity
@@ -57,4 +59,19 @@ public class Product {
 
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable = true;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ProductImage> productImages = new ArrayList<>();
+
+    public void addImage(ProductImage productImage) {
+        productImages.add(productImage);
+        productImage.setProduct(this);
+    }
+    public void removeImage(ProductImage productImage) {
+        productImages.remove(productImage);
+        productImage.setProduct(null);
+    }
+
+
 }

@@ -1,6 +1,7 @@
 package com.example.demo.dto.response;
 
 import com.example.demo.Entity.Category;
+import com.example.demo.Entity.ProductImage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -26,6 +28,8 @@ public class ProductResponse {
     private Boolean isAvailable;
     private SellerInfo seller;
     private LocalDateTime createdAt;
+    private List<String> productImages;
+    private String primaryImage;
 
     @Data
     @Builder
@@ -36,6 +40,8 @@ public class ProductResponse {
         private String fistName;
         private String lastName;
         private String email;
+
+
     }
 
 

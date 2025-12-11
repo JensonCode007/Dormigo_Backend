@@ -50,4 +50,43 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
 
 
     Collection<Product> findBySellerId(Long id);
+
+
+    /*Advanced Filtering*/
+    @Query("SELECT p FROM Product p WHERE " +
+            "(:keyword IS NULL OR " +
+            "  LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "  LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:condition is NULL OR p.productCondition = :condition) AND " +
+            "(:minPrice is NULL OR p.price >= :minPrice) AND " +
+            "(:maxPrice is NULL OR p.price <= :maxPrice) AND " +
+            "p.isAvailable = true"
+    )
+    Page<Product> searchProductsWithFilters(
+            @Param("keyword") String keyword,
+            @Param("categoryId") Long categoryId,
+            @Param("condition") ProductCondition condition,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            Pageable pageable
+    );
+
+
+    Page<Product> findByCategoryIdAndProductConditionAndIsAvailableTrue(
+            Long id,
+            ProductCondition condition,
+            Pageable pageable
+    );
+
+    @Query("SELECT p FROM Product p WHERE " +
+            "p.category.id = :categoryId AND " +
+            "p.price BETWEEN :minPrice AND :maxPrice AND " +
+            "p.isAvailable= true"
+    )
+    Page<Product> findByCategoryAndPriceRange(
+            Long categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Pageable pageable
+    );
 }

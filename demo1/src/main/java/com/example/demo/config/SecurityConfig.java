@@ -41,6 +41,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**"). permitAll() // Public endpoints
                         .requestMatchers("/api/products/public/**").permitAll()
+                        .requestMatchers("/api/files/**").permitAll()
+                        .requestMatchers("/api/products/public/**").permitAll()
+                        .requestMatchers("/api/products/public/**").permitAll()
                         .requestMatchers("/api/category/public/**").permitAll()
                         .anyRequest().authenticated() // All other endpoints require login
                 )
@@ -49,3 +52,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
