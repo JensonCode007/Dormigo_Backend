@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products/")
+@RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -64,7 +64,7 @@ public class ProductController {
             @PathVariable Long categoryId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "name")  String sortBy,
+            @RequestParam(defaultValue = "title")  String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDir){
         if(page < 0) page = 0;
         if(size > 100) size = 100;

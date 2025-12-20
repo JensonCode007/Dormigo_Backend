@@ -54,4 +54,7 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToOne(mappedBy = "user")
+    private Cart cart;
+
 }

@@ -13,5 +13,6 @@ INSERT INTO categories (name, description) VALUES
                                                ('Stationery', 'Pens, pencils, notebooks, and office supplies'),
                                                ('Electronics', 'Calculators, USB drives, headphones'),
                                                ('Fashion', 'Clothes, shoes, accessories'),
+                                               ('Toys', 'Toy cars, Hot Wheels, accessories'),
                                                ('Sports', 'Sports equipment and gear'),
                                                ('Other', 'Miscellaneous items');

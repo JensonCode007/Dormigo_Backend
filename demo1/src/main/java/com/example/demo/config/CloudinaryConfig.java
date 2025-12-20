@@ -22,14 +22,7 @@ public class CloudinaryConfig {
 
     @Bean
     public Cloudinary cloudinary() {
-        log.info("========================================");
-        log.info("🔧 CLOUDINARY CONFIGURATION");
-        log.info("Cloud Name: '{}'", cloudName);
-        log.info("API Key: '{}'", apiKey);
-        log.info("API Secret: '{}.. .' (length: {})",
-                apiSecret != null ? apiSecret.substring(0, Math.min(5, apiSecret.length())) : "null",
-                apiSecret != null ?  apiSecret.length() : 0);
-        log.info("========================================");
+
 
         // Check for null/empty values
         if (cloudName == null || cloudName.trim().isEmpty()) {

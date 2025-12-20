@@ -2,9 +2,11 @@ package com.example.demo.service;
 
 import com.example.demo.Entity.Category;
 import com.example.demo.Entity.Product;
+import com.example.demo.Entity.ProductImage;
 import com.example.demo.Entity.User;
 import com.example.demo.Enums.ProductCondition;
 import com.example.demo.Repository.CategoryRepository;
+import com.example.demo.Repository.ProductImageRepository;
 import com.example.demo.Repository.ProductRepository;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.controller.ProductController;
@@ -39,6 +41,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final ProductImageRepository productImageRepository;
 
     @Transactional
     public ProductResponse addProduct(ProductRequest productRequest, UserPrincipal userPrincipal) {
@@ -85,8 +88,11 @@ public class ProductService {
     }
 
     public ProductResponse getProductById(Long id){
+
+
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
 
         return ProductMapper.toResponse(product);
     }
