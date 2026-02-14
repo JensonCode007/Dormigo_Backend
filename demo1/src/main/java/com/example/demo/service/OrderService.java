@@ -164,7 +164,7 @@ public class OrderService {
 
 
             if(order.getOrderStatus() != OrderStatus.PAYMENT_COMPLETED
-               && !order.getOrderStatus().equals(OrderStatus.SELLER_NOTIFIED)
+               && order.getOrderStatus() != OrderStatus.SELLER_NOTIFIED
             ){
                 throw new IllegalStateException("The order is not ready sharing meeting details");
             }

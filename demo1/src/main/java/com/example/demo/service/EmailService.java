@@ -78,14 +78,20 @@ public class EmailService {
                     item ->{
                         Map<String, Object> itemModel = new HashMap<>();
                         itemModel.put("productTitle", item.getProduct().getTitle());
-                        itemModel.put("productQuantity", item.getProduct().getQuantity());
-                        itemModel.put("productPrice", item.getProduct().getPrice());
-                        itemModel.put("totalPrice", item.getProduct().getPrice());
+                        itemModel.put("quantity", item.getProduct().getQuantity());
+                        itemModel.put("price", item.getProduct().getPrice());
+                        itemModel.put("subtotal", item.getPriceAtPurchase().multiply(new java.math.BigDecimal(item.getQuantity())));
                         itemModel.put("sellerName", item.getSeller().getFirstName() + " " + item.getSeller().getLastName());
                         return itemModel;
                     }
 
-            ));
+            ).collect(java.util.stream.Collectors.toList()));
+            sendTemplatedEmail(
+                    order.getBuyer().getEmail(),
+                    "Order Confirmation - " + order.getOrderNumber() + "🔔",
+                    "orderConfirmation.ftl",
+                    model
+            );
         }
         catch (Exception e){
             log.info("Couldn't sent the order confirmation email to the user with order id : {} ❌", order.getId());
@@ -175,6 +181,24 @@ public class EmailService {
             log.info("Sending Payment Confirmation Mail for the order id : {}", order.getId());
 
             Map<String, Object> model = new HashMap<>();
+            model.put("firstName", order.getBuyer().getFirstName());
+            model.put("itemName", order.getItems().get(0).getProduct().getTitle());
+            model.put("orderId", order.getId());
+            model.put("itemPrice", order.getItems().get(0).getProduct().getPrice());
+            model.put("fee", "0.00");
+            model.put("totalAmount", order.getTotalAmount());
+            model.put("orderUrl", appUrl + "/orders/" + order.getId());
+            model.put("supportUrl", appUrl + "/support");
+
+            sendTemplatedEmail(
+                    order.getBuyer().getEmail(),
+                    "Payment Confirmed - " + order.getOrderNumber() + "💳",
+                    "payment-confirmation-email.ftl",
+                    model
+            );
+
+
+
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -183,27 +207,111 @@ public class EmailService {
 
     @Async
     public void sendSellerNotification(Order order){
+        try{
+            log.info("Sending seller notification for order id : {}", order.getId());
 
+            User seller = order.getItems().get(0).getProduct().getSeller();
+            Map<String, Object> model = new HashMap<>();
+            model.put("sellerName", seller.getFirstName()+" "+seller.getLastName());
+            model.put("buyerName", order.getBuyer().getFirstName()+" "+order.getBuyer().getLastName());
+            model.put("orderNumber", order.getOrderNumber());
+            model.put("totalAmount", order.getTotalAmount());
+            model.put("orderUrl", appUrl + "/orders/" + order.getId());
+
+            model.put("items", order.getItems().stream().map(
+                    item ->{
+                        Map<String, Object> itemModel = new HashMap<>();
+                        itemModel.put("productTitle", item.getProduct().getTitle());
+                        itemModel.put("quantity", item.getQuantity());
+                        itemModel.put("subtotal", item.getPriceAtPurchase().multiply(new java.math.BigDecimal(item.getQuantity())));
+                        return itemModel;
+                    }
+            ).collect(java.util.stream.Collectors.toList()));
+
+            sendTemplatedEmail(
+                    seller.getEmail(),
+                    "New Order - " + order.getOrderNumber() + "🔔",
+                    "sellernotifigation.ftl",
+                    model
+            );
+            log.info("Seller notification sent ✅");
+        }
+        catch (Exception e){
+            log.info("Failed to send seller notifigation ❌");
+        }
     }
 
     @Async
     public void sendMeetingDetails(Order order, String otpCode){
-
+        sendOTPEmail(order, otpCode);
     }
 
     @Async
     public void sendOrderCompletedEmail(Order order){
+        try {
+            log.info("Sending order completed email for the order id : {}", order.getId());
+            Map<String, Object> model = new HashMap<>();
+            model.put("buyerName", order.getBuyer().getFirstName() + " " + order.getBuyer().getLastName());
+            model.put("orderNumber", order.getOrderNumber());
+            model.put("completedAt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+
+            sendTemplatedEmail(
+                    order.getBuyer().getEmail(),
+                    "Order completed - " + order.getOrderNumber() + "✅",
+                    "test-email.ftl",
+                    model
+            );
+            log.info("Order completed email sent successfully to: {}", order.getBuyer().getEmail());
+        }
+        catch (Exception e){
+            log.info("Failed to send order completed email to: {} ✅", order.getBuyer().getEmail());
+        }
 
     }
 
     @Async
     public void sendOrderCancelledEmail(Order order){
+        try{
+            log.info("Sending order cancelled email for the order id : {}", order.getId());
 
+            Map<String, Object> model = new HashMap<>();
+            model.put("buyerName", order.getBuyer().getFirstName() + " " + order.getBuyer().getLastName());
+            model.put("orderNumber", order.getOrderNumber());
+
+            sendTemplatedEmail(
+                    order.getBuyer().getEmail(),
+                    "Order Cancelled - " + order.getOrderNumber() + "❌",
+                    "test-email.ftl",
+                    model
+            );
+            log.info("Order Cancelled email sent successfully to: {} ✅", order.getBuyer().getEmail());
+        }
+        catch (Exception e){
+            log.info("Failed to send order cancelled email to: {} ❌", order.getBuyer().getEmail());
+        }
     }
 
     @Async
     public void sendProductListedEmail(Product product){
+        try{
+            log.info("Sending product listed email for the product id : {}", product.getId());
+            Map<String, Object> model = new HashMap<>();
+            model.put("sellerName", product.getSeller().getFirstName() + " " + product.getSeller().getLastName());
+            model.put("productTitle", product.getTitle());
+            model.put("productPrice", product.getPrice());
 
+            sendTemplatedEmail(
+                    product.getSeller().getEmail(),
+                    "Product Listed - " + product.getTitle() + " 🎉",
+                    "test-email.ftl", // Reuse for now
+                    model
+            );
+            log.info("Product listed email sent successfully to: {} ✅", product.getSeller().getEmail());
+
+        }
+        catch (Exception e){
+            log.info("Failed to send product listed email ❌");
+        }
     }
 
 
