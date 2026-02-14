@@ -5,6 +5,8 @@ import com.example.demo.dto.request.RegisterRequest;
 import com.example.demo.dto.response.AuthResponse;
 import com.example.demo.dto.response.UserResponse;
 import com.example.demo.service.AuthService;
+import com.example.demo.util.RequestUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +33,15 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest){
-        AuthResponse authResponse = authService.login(loginRequest);
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest loginRequest,
+            HttpServletRequest request
+    )
+    {
+
+        String ipAddress = RequestUtils.getClientIpAddress(request);
+        String device = RequestUtils.getDeviceInfo(request);
+        AuthResponse authResponse = authService.login(loginRequest, ipAddress, device);
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
 

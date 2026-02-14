@@ -38,7 +38,7 @@ public class OrderService {
     private final MockPaymentService mockPaymentService;
     private final OtpService otpService;
     private final CartRepository cartRepository;
-
+    private final EmailService emailService;
 
     @Transactional
     public Map<String, Object> createOrder(CreateOrderRequest createOrderRequest, UserPrincipal userPrincipal) {
@@ -99,6 +99,7 @@ public class OrderService {
 
         cart.clearItems();
         cartRepository.save(cart);
+        emailService.sendOrderConfirmationEmail(createOrder);
 
         log.info("Order Created Successfully for the User Id : {}", userPrincipal.getId());
 
@@ -131,6 +132,7 @@ public class OrderService {
             order.setStripePaymentIntendId(paymentIntendId);
             order.setStripePaymentStatus("requires_capture");
             order.setOrderStatus(OrderStatus.PAYMENT_COMPLETED);
+            emailService.sendPaymentConfirmation(order);
 
             order = orderRepository.save(order);
 
@@ -175,6 +177,8 @@ public class OrderService {
 
             log.info("Meeting requirements for the order has been successfully set ✅");
             generateAndSendOTP(order);
+
+            emailService.sendMeetingDetails(order);
 
             return OrderMapper.toResponse(order);
 
@@ -307,6 +311,7 @@ public class OrderService {
         public void notifySeller (Order order){
             order.setOrderStatus(OrderStatus.SELLER_NOTIFIED);
             orderRepository.save(order);
+            emailService.sendSellerNotification(order);
             log.info("Order Notification Successfully for the Order Id : {} ✅", order.getId());
         }
 

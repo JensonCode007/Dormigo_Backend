@@ -42,6 +42,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final ProductImageRepository productImageRepository;
+    private final EmailService emailService;
 
     @Transactional
     public ProductResponse addProduct(ProductRequest productRequest, UserPrincipal userPrincipal) {
@@ -74,7 +75,7 @@ public class ProductService {
         product.setIsAvailable(true);
 
         Product savedProduct = productRepository.save(product);
-
+        emailService.sendProductListedEmail(savedProduct);
         return ProductMapper.toResponse(savedProduct);
     }
 

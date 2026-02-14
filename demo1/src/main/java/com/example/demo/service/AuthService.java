@@ -13,6 +13,7 @@ import com.example.demo.security.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,16 +21,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     @Transactional
     public UserResponse signUp(RegisterRequest request){
@@ -45,12 +50,19 @@ public class AuthService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setRole(Role.STUDENT);
 
+        try{
+         emailService.sendWelcomeEmail(user);
+        }
+        catch (Exception e){
+            log.error("Failed to send welcome email, but registration succeeded", e);
+
+        }
         User savedUser = userRepository.save(user);
 
         return UserMapper.toResponse(savedUser);
     }
 
-    public AuthResponse login(LoginRequest request){
+    public AuthResponse login(LoginRequest request, String ipAddress, String device){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
 
@@ -63,6 +75,8 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
                 () -> new ResourceAlredyExistsException("User not found"));
 
+
+        emailService.sendLoginNotification(user, ipAddress, device, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         return new AuthResponse(jwt, user.getId(),
                 user.getEmail(), user.getFirstName(),
                 user.getLastName(), user.getRole());
