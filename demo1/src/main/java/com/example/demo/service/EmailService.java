@@ -187,7 +187,7 @@ public class EmailService {
     }
 
     @Async
-    public void sendMeetingDetails(Order order){
+    public void sendMeetingDetails(Order order, String otpCode){
 
     }
 

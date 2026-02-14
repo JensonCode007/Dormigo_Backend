@@ -178,7 +178,9 @@ public class OrderService {
             log.info("Meeting requirements for the order has been successfully set ✅");
             generateAndSendOTP(order);
 
-            emailService.sendMeetingDetails(order);
+            String otpCode = order.getOtpCode();
+
+            emailService.sendMeetingDetails(order, otpCode);
 
             return OrderMapper.toResponse(order);
 

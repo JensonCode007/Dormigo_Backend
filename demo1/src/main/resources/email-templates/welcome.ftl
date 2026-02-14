@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #602314 }
         .header { background: #4F46E5; color: white; padding: 30px; text-align: center; }
         .content { padding: 30px; background: #f9fafb; }
-        .button { display: inline-block; padding: 12px 30px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .button { display: inline-block; padding: 12px 30px; background: linear-gradient(#DD9047, #BC552A); color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;}
         .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
     </style>
 </head>
