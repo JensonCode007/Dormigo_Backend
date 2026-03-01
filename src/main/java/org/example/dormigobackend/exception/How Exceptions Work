@@ -1,0 +1,28 @@
+1. Exception thrown in Service:
+   throw new ResourceNotFoundException("Product", "id", 999);
+
+2. Spring catches exception:
+   "Oh, a ResourceNotFoundException was thrown!"
+
+3. Spring looks for matching @ExceptionHandler:
+   "Does GlobalExceptionHandler have a method for this?"
+
+4.  Finds matching handler:
+   @ExceptionHandler(ResourceNotFoundException.class)
+   "Yes! This method handles ResourceNotFoundException!"
+
+5. Executes handler method:
+   - Creates ErrorResponse object
+   - Sets status = 404
+   - Sets message = "Product not found with id: '999'"
+   - Sets timestamp = current time
+   - Sets path = "/api/products/999"
+
+6. Returns response to frontend:
+   HTTP 404 with JSON:
+   {
+     "status": 404,
+     "message": "Product not found with id: '999'",
+     "timestamp": "2024-01-15 14:30:45",
+     "path": "/api/products/999"
+   }
