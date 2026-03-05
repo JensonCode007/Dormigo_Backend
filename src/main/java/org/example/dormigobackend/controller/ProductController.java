@@ -33,6 +33,10 @@ public class ProductController {
     private final ProductRepository productRepository;
     private final ProductService productService;
 
+    @GetMapping("/public/test")
+    public String home() {
+        return "Backend is running!";
+    }
     @GetMapping("/public/all")
     public ResponseEntity<PageResponse<ProductResponse>> getAllAvailableProducts(
             @RequestParam(defaultValue = "0") int page,
